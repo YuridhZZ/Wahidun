@@ -1,6 +1,8 @@
 # Wahidun
 Kelompok 1 
 
+Zulkarnain Z.M
+
 Timotius
 
 Nafira R.
