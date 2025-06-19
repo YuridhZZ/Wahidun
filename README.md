@@ -1,3 +1,3 @@
 # Wahidun
 
-Hello Timotius
+Timotius
