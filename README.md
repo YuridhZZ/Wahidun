@@ -1,3 +1,0 @@
-# Wahidun
-
-Zulkarnain Zahrawan Mayuridh
