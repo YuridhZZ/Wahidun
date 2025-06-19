@@ -1,11 +1,6 @@
 # Wahidun
 
 
-Nafira Ramadhannis
+Marella Elba Nafisa
 
-Zulkarnain Z.M
-
-IlhamIsdi
-
-Semangat kita Wahidun
 
