@@ -2,5 +2,3 @@
 
 IlhamIsdi
 
-Semangat kita Wahidun
-
