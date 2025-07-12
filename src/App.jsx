@@ -5,6 +5,9 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import RegisterPage from './pages/RegisterPage';
 import PageNotFound from './pages/PageNotFound';
+import TransactionForm from './pages/TransactionPage';
+import TransactionPage from './pages/TransactionListPage';
+
 
 function App() {
 
@@ -26,7 +29,7 @@ function App() {
             path="/transaction"
             element={
               <ProtectedRoute>
-                <TransactionListPage />
+                <TransactionPage />
               </ProtectedRoute>
             }
           />
