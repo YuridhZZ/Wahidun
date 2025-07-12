@@ -1,5 +1,5 @@
 import './App.css'
-import { AuthProvider, ProtectedRoute } from './contexts/AuthContext';
+import { AuthProvider, ProtectedRoute, GuestRoute } from './contexts/AuthContext';
 import { BrowserRouter as Router, Routes, Route } from 'react-router';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -12,8 +12,17 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          } />
+
+          <Route path="/register" element={
+            <GuestRoute>
+              <RegisterPage />
+            </GuestRoute>
+          } />
           <Route
             path="/dashboard"
             element={

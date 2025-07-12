@@ -1,12 +1,25 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const isAuthenticated = user !== null;
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        localStorage.removeItem('user');
+      }
+    }
+    setLoading(false);
+  }, []);
 
   const login = async (credentials) => {
     try {
@@ -19,6 +32,7 @@ export function AuthProvider({ children }) {
 
       if (foundUser) {
         setUser(foundUser);
+        localStorage.setItem('user', JSON.stringify(foundUser)); // nyimpen user di localStorage
         navigate('/dashboard');
         return { success: true };
       } else {
@@ -45,8 +59,8 @@ export function AuthProvider({ children }) {
         email: formData.email,
         password: formData.password,
         accountType: formData.accountType,
-        accountNumber : new Date().toISOString(),
-        balance : 1000000,
+        accountNumber: new Date().toISOString(),
+        balance: 1000000,
         createdAt: new Date().toISOString()
       };
 
@@ -61,6 +75,7 @@ export function AuthProvider({ children }) {
       if (response.ok) {
         const newUser = await response.json();
         setUser(newUser);
+        localStorage.setItem('user', JSON.stringify(newUser)); // nyimpen user di localStorage
         navigate('/dashboard');
         return { success: true };
       } else {
@@ -73,11 +88,15 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('user'); // menghapus user dari localStorage
     navigate('/login');
+  };
+  const checkAuth = () => {
+    return localStorage.getItem('user') !== null;
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );
@@ -86,6 +105,11 @@ export function AuthProvider({ children }) {
 export function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+export function GuestRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
 }
 
 export function useAuth() {
