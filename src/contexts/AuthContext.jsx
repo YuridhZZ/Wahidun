@@ -91,12 +91,19 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user'); // menghapus user dari localStorage
     navigate('/login');
   };
-  const checkAuth = () => {
-    return localStorage.getItem('user') !== null;
+
+  const updateUserBalance = (newBalance) => {
+    const updatedUser = { ...user, balance: newBalance };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register, checkAuth }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register, updateUserBalance }}>
       {children}
     </AuthContext.Provider>
   );
