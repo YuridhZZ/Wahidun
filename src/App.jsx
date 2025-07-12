@@ -22,6 +22,22 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/transaction"
+            element={
+              <ProtectedRoute>
+                <TransactionListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/newTransaction"
+            element={
+              <ProtectedRoute>
+                <TransactionForm />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/" element={<LoginPage />} />
           <Route path="*" element={<PageNotFound />} />
 
