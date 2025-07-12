@@ -31,27 +31,25 @@ export function AuthProvider({ children }) {
 
   const register = async (formData) => {
     try {
-      // Validate password match
+
       if (formData.password !== formData.confirmPassword) {
         return { success: false, message: 'Passwords do not match' };
       }
 
-      // Validate terms accepted
       if (!formData.termsAccepted) {
         return { success: false, message: 'You must accept the terms and conditions' };
       }
 
-      // Prepare user data for API
       const userData = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
         accountType: formData.accountType,
+        accountNumber : new Date().toISOString(),
         balance : 1000000,
         createdAt: new Date().toISOString()
       };
 
-      // Mock API call - in a real app, this would be a POST request to your backend
       const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user', {
         method: 'POST',
         headers: {
