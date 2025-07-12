@@ -33,6 +33,13 @@ function DashboardPage() {
               <p className="text-gray-600">You have successfully logged in.</p>
               <div className="mt-6">
                 <p className="text-gray-500">Email: {user?.email}</p>
+                <p className="text-gray-500">{user.accountType}</p>
+                <p className="text-gray-500">No: {user.accountNumber}</p>
+                <p className="text-gray-500">{user.balance}</p>
+                <Link to='/transaction'
+                    className="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mx-2">
+                    Transaction List
+                </Link>
               </div>
             </div>
           </div>
