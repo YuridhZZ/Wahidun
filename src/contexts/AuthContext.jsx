@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
+import { generateAccountNumber } from '../utils/generateAccNumber';
 
 const AuthContext = createContext();
 
@@ -29,6 +30,7 @@ export function AuthProvider({ children }) {
         u.email === credentials.email && u.password === credentials.password
       );
       if (foundUser) {
+        console.log('[FOUND USER]', foundUser);
         setUser(foundUser);
         localStorage.setItem('user', JSON.stringify(foundUser)); // nyimpen user di localStorage
         navigate('/dashboard');
@@ -58,7 +60,7 @@ export function AuthProvider({ children }) {
         email: formData.email,
         password: formData.password,
         accountType: formData.accountType,
-        accountNumber: new Date().toISOString(),
+        accountNumber: generateAccountNumber(),
         balance: 1000000,
         createdAt: new Date().toISOString()
       };

@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Navigate, Link } from 'react-router';
+import { useTransactions } from '../contexts/TransactionContext';
 
 /**
  * TransactionForm Component
  * A React functional component for managing and displaying transaction details.
  * It includes state for balance transfer, transfer time, and account number.
  */
+
 function TransactionForm() {
   // State variables for transaction details
   const { user, logout } = useAuth();
+  const [users, setUsers] = useState([]);
   const [balanceTransfer, setBalanceTransfer] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [transferTime, setTransferTime] = useState('');
@@ -17,7 +20,13 @@ function TransactionForm() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  
+  // get data User
+  useEffect(() => {
+    fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user')
+      .then(response => response.json())
+      .then(data => { setUsers(data) })
+      .catch(error => console.error('Error fetching user data:', error));
+    }, []); // Empty dependency array to run only once on mount
 
   const handleBalanceTransferChange = (e) => {
     // Allow only numbers and a single decimal point
@@ -41,30 +50,88 @@ function TransactionForm() {
     setIsLoading(true);
     setError('');
 
-    const userData = {
+    const nominal = Number(balanceTransfer);
+
+    if (nominal > Number(user.balance)) {
+      setError('Insufficient balance for this transaction.');
+      setIsLoading(false);
+      return;
+    }
+
+    const destinationUser = users.find(u => String(u.accountNumber) === String(accountNumber));
+    if (!destinationUser) {
+      setError('Invalid account number.');
+      setIsLoading(false);
+      return;
+    }
+
+    
+    const transactionPayload = {
         accountSourceId:user.id,
-        accountSourceNumber: user.name,
-        accountDestinationNumber: accountNumber,
-        category: 'category1',
-        nominal : balanceTransfer,
+        accountSourceName: user.name,
+        accountSourceNumber: user.accountNumber,
+        accountDestinationId: destinationUser.id,
+        accountDestinationNumber: destinationUser.accountNumber,
+        accountDestinationName: destinationUser.name,
+        category: 'transfer', // default
+        nominal : nominal,
         transferTime : transferTime,
         createdAt: new Date().toISOString()
     };
-    console.log(transferTime)
+    console.log(transactionPayload);
 
-    const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/transaction', {
+    try {
+      const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/transaction', {
         method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-    });
-    navigate('/dashboard'); 
-    return { success: true, message: 'Transaction details submitted!'};
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transactionPayload),
+      });
 
-    // You would typically send this data to an API or update global state here
-    // alert('Transaction details submitted! Check console for values.'); // Using alert for demonstration, replace with a custom modal in production
-  };
+      if (!response.ok) throw new Error('Gagal menyimpan transaksi');
+
+      // (Opsional) Update saldo user sumber di API
+      const resSource = await fetch(`https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user/${transactionPayload.accountSourceId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: user.name,
+          email: user.email,
+          accountNumber: user.accountNumber,
+          accountType: user.accountType,
+          password: user.password,
+          balance: Number(user.balance) - nominal})
+      });
+
+      const updatedSource = await resSource.json();
+      console.log('[UPDATED SOURCE USER]', updatedSource);
+
+      // (Opsional) Tambahkan saldo ke user tujuan
+      const restDest = await fetch(`https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user/${transactionPayload.accountDestinationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: destinationUser.name,
+            email: destinationUser.email,
+            password: destinationUser.password,
+            accountNumber: destinationUser.accountNumber,
+            accountType: destinationUser.accountType,
+            balance: Number(destinationUser.balance) + Number(nominal)
+          }),
+      });
+
+      const updatedDestination = await restDest.json();
+      console.log('[UPDATED DESTINATION USER]', updatedDestination);
+
+
+      navigate('/dashboard');
+    } catch (err) {
+      console.error(err);
+      setError('Terjadi error saat proses transaksi.');
+    } finally {
+      setIsLoading(false);
+    }
+};
+
 
   return (
     <div className="min-h-full">
@@ -120,7 +187,7 @@ function TransactionForm() {
               <strong>Account Number:</strong> {accountNumber || 'N/A'}
             </p>
             <p className="text-sm text-gray-600">
-              <strong>Balance Transfer:</strong> {balanceTransfer || 'N/A'}
+              <strong>Balance Transfer:</strong> Rp {balanceTransfer || 'N/A'}
             </p>
             <p className="text-sm text-gray-600">
               <strong>Transfer Time:</strong> {transferTime || 'N/A'}
@@ -133,4 +200,4 @@ function TransactionForm() {
   );
 }
 
-export default TransactionForm
+export default TransactionForm;
