@@ -1,46 +1,37 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, useCallback } from 'react';
 
-const LOCAL_STORAGE_KEY = 'userActivityLogs';
+const ACTIVITY_LOG_KEY = 'activityLog';
 
 export const useActivityLog = () => {
-  const { user } = useAuth();
-
-  const getUserSpecificLogs = useCallback(() => {
-    if (!user?.id) return [];
+  const getLogs = () => {
     try {
-      const allLogs = localStorage.getItem(LOCAL_STORAGE_KEY);
-      const parsedLogs = allLogs ? JSON.parse(allLogs) : {};
-      return parsedLogs[user.id] || [];
+      const logs = sessionStorage.getItem(ACTIVITY_LOG_KEY);
+      return logs ? JSON.parse(logs) : [];
     } catch (error) {
-      console.error("Error reading activity log from localStorage", error);
+      console.error("Error reading activity log from sessionStorage", error);
       return [];
     }
-  }, [user]);
+  };
 
-  const [activities, setActivities] = useState(getUserSpecificLogs);
-  
-  useEffect(() => {
-      setActivities(getUserSpecificLogs());
-  }, [user, getUserSpecificLogs]);
+  const [activities, setActivities] = useState(getLogs);
 
   const logActivity = useCallback((action) => {
-    if (!user?.id) return;
-
     const newActivity = {
       action,
       timestamp: new Date().toISOString(),
     };
-
-    const allLogs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{}');
-    const userLogs = allLogs[user.id] || [];
-    const updatedUserLogs = [newActivity, ...userLogs];
-    allLogs[user.id] = updatedUserLogs;
-
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(allLogs));
     
-    setActivities(updatedUserLogs);
-  }, [user]);
+    const updatedActivities = [newActivity, ...getLogs()];
+    
+    sessionStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(updatedActivities));
+    setActivities(updatedActivities);
+  }, []);
 
-  return { activities, logActivity };
+  // 👇 This new function clears the log
+  const clearActivityLog = useCallback(() => {
+    sessionStorage.removeItem(ACTIVITY_LOG_KEY);
+    setActivities([]);
+  }, []);
+
+  return { activities, logActivity, clearActivityLog }; // Export the new function
 };

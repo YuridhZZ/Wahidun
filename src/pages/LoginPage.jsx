@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useActivityLog } from '../hooks/useActivityLog';
 import { Link } from 'react-router-dom';
@@ -11,6 +11,7 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { logActivity } = useActivityLog();
+  const effectRan = useRef(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +20,7 @@ function LoginPage() {
     
     const result = await login({ email, password });
 
-    if (result.success) {
+    if (effectRan.result.success) {
       // This line handles the logging right after a successful login
       logActivity('User signed in'); 
     } else {

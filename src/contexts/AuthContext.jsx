@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { generateAccountNumber } from '../utils/generateAccNumber';
+import { useActivityLog } from '../hooks/useActivityLog';
 
-// No longer imports useActivityLog
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -10,6 +10,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const isAuthenticated = user !== null;
+  const { logActivity, clearActivityLog } = useActivityLog(); // Get the clear function
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -31,6 +32,8 @@ export function AuthProvider({ children }) {
           const updatedUser = await response.json();
           setUser(updatedUser);
           localStorage.setItem('user', JSON.stringify(updatedUser));
+        } else {
+           throw new Error('Failed to refresh user data');
         }
       } catch (error) {
         console.error("Failed to refresh user data:", error);
@@ -48,8 +51,13 @@ export function AuthProvider({ children }) {
       if (foundUser) {
         setUser(foundUser);
         localStorage.setItem('user', JSON.stringify(foundUser));
+
+        // Clear any previous user's activity log
+        clearActivityLog();
+        logActivity('User signed in');
+
         navigate('/dashboard');
-        return { success: true }; // Return success
+        return { success: true };
       } else {
         return { success: false, message: 'Invalid credentials' };
       }
@@ -79,15 +87,22 @@ export function AuthProvider({ children }) {
       };
       const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(userData),
       });
       if (response.ok) {
         const newUser = await response.json();
         setUser(newUser);
         localStorage.setItem('user', JSON.stringify(newUser));
+        
+        // Clear any previous log and start a new one
+        clearActivityLog();
+        logActivity('New user registered and signed in');
+
         navigate('/dashboard');
-        return { success: true }; // Return success
+        return { success: true };
       } else {
         return { success: false, message: 'Registration failed. Please try again.' };
       }
@@ -99,8 +114,11 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    logActivity('User signed out');
     setUser(null);
     localStorage.removeItem('user');
+    // We don't clear the log here so the user can see "User signed out" before it disappears.
+    // The log will be cleared upon the next user's login.
     navigate('/login');
   };
 
