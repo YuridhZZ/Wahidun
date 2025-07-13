@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
     HomeIcon,
     ClockIcon,
@@ -6,14 +6,26 @@ import {
     ArrowRightIcon,
     ArrowLeftIcon
 } from '@heroicons/react/24/solid';
+import MenuItem from './MenuItems';
+import { useState } from 'react';
+
+const menuData = [
+    { id:'dashboard',path: '/dashboard', name: 'Dashboard', icon: HomeIcon },
+    {
+        id:'transac',name: 'Transactions', icon: ClockIcon,
+        subItems: [
+            { id:'transacNew',path: '/transactions/new', name: 'New Transactions',  },
+            { id:'transacList',path: '/transactions/lists', name: 'Transactions Lists',  },
+        ],
+    },
+    { id:'prodile',path: '/profile', name: 'Profile', icon: UserIcon }
+    ];
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
     const location = useLocation();
-    const links = [
-        { path: '/dashboard', name: 'Dashboard', icon: HomeIcon },
-        { path: '/transactions', name: 'Transactions', icon: ClockIcon },
-        { path: '/profile', name: 'Profile', icon: UserIcon }
-    ];
+
+    // State to manage which sub-menu is currently open (for accordion effect)
+    const [openSubMenuName, setOpenSubMenuName] = useState(null);
 
     return (
         <aside
@@ -23,16 +35,15 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
         >
             <div className="overflow-y-auto py-5 px-3 h-full bg-white">
                 <ul className="space-y-2">
-                    {links.map((link) => (
-                        <li key={link.path}>
-                            <Link
-                                to={link.path}
-                                className={`flex items-center p-2 text-base font-medium rounded-lg hover:bg-gray-100 ${location.pathname === link.path ? 'bg-gray-100' : ''}`}
+                    {menuData.map((link) => (
+                        <MenuItem
+                            key={link.id} // Use name as key if unique, otherwise index
+                            item={link}
+                            isOpen={openSubMenuName === link.id} // Pass down if this item is open
+                            setOpenMenuItem={() => setOpenSubMenuName(link.id)} // Function to open this item
+                            closeCurrentSubMenu={() => setOpenSubMenuName(null)} // Function to close this item
                             >
-                                <link.icon className="w-6 h-6 text-gray-500" />
-                                <span className="ml-3">{link.name}</span>
-                            </Link>
-                        </li>
+                        </MenuItem>
                     ))}
                 </ul>
             </div>

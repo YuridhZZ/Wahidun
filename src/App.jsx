@@ -9,8 +9,6 @@ import DashboardPage from './pages/DashboardPage';
 import RegisterPage from './pages/RegisterPage';
 import PageNotFound from './pages/PageNotFound';
 import TransactionForm from './pages/TransactionPage';
-import TransactionPage from './pages/TransactionListPage';
-
 import Transactions from './pages/Transactions'
 import Profile from './pages/Profile';
 import Layout from './components/Layout';
@@ -25,7 +23,8 @@ function App() {
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
           <Route path="/" element={<ProtectedRoute><LayoutWrapper /></ProtectedRoute>}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/transactions/new" element={<TransactionForm />} />
+            <Route path="/transactions/lists" element={<Transactions />} />
             <Route path="profile" element={<Profile />} />
             <Route index element={<DashboardPage />} />
           </Route>
