@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
+import { generateAccountNumber } from '../utils/generateAccNumber';
 
+// No longer imports useActivityLog
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -21,6 +23,21 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
+  const refreshUserData = useCallback(async () => {
+    if (user?.id) {
+      try {
+        const response = await fetch(`https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user/${user.id}`);
+        if (response.ok) {
+          const updatedUser = await response.json();
+          setUser(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      } catch (error) {
+        console.error("Failed to refresh user data:", error);
+      }
+    }
+  }, [user]);
+
   const login = async (credentials) => {
     try {
       const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user');
@@ -30,12 +47,12 @@ export function AuthProvider({ children }) {
       );
       if (foundUser) {
         setUser(foundUser);
-        localStorage.setItem('user', JSON.stringify(foundUser)); // nyimpen user di localStorage
+        localStorage.setItem('user', JSON.stringify(foundUser));
         navigate('/dashboard');
-        return { success: true };
+        return { success: true }; // Return success
       } else {
-        return { success: false, message: error };
-      } 
+        return { success: false, message: 'Invalid credentials' };
+      }
     } catch (error) {
       return { success: false, message: 'Login failed. Please try again.' };
     } finally {
@@ -43,44 +60,39 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register=async(formData)=> {
+  const register = async (formData) => {
     try {
       if (formData.password !== formData.confirmPassword) {
-        return { success: false, message: error };
+        return { success: false, message: 'Passwords do not match' };
       }
-
       if (!formData.termsAccepted) {
         return { success: false, message: 'You must accept the terms and conditions' };
       }
-
       const userData = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
         accountType: formData.accountType,
-        accountNumber: new Date().toISOString(),
+        accountNumber: generateAccountNumber(),
         balance: 1000000,
         createdAt: new Date().toISOString()
       };
-
       const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
       });
-       if (response.ok) {
+      if (response.ok) {
         const newUser = await response.json();
         setUser(newUser);
-        localStorage.setItem('user', JSON.stringify(newUser)); // nyimpen user di localStorage
+        localStorage.setItem('user', JSON.stringify(newUser));
         navigate('/dashboard');
-        return { success: true };
+        return { success: true }; // Return success
       } else {
         return { success: false, message: 'Registration failed. Please try again.' };
       }
-     } catch (error) {
-      return { success: false, message: error.message || 'An unexpected error occurred during login.' };
+    } catch (error) {
+      return { success: false, message: error.message || 'An unexpected error occurred.' };
     } finally {
       setLoading(false);
     }
@@ -88,14 +100,8 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user'); // menghapus user dari localStorage
+    localStorage.removeItem('user');
     navigate('/login');
-  };
-
-  const updateUserBalance = (newBalance) => {
-    const updatedUser = { ...user, balance: newBalance };
-    setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   if (loading) {
@@ -103,7 +109,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register, updateUserBalance }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );
