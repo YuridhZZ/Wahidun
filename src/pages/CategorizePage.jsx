@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import { useTransactions } from '../contexts/TransactionContext';
 import { useCategories } from '../hooks/useCategories';
 import { useAuth } from '../contexts/AuthContext';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
-// A draggable transaction item
 const DraggableTransaction = ({ transaction }) => {
   const handleDragStart = (e, tx) => {
     e.dataTransfer.setData('transaction', JSON.stringify(tx));
@@ -17,42 +17,37 @@ const DraggableTransaction = ({ transaction }) => {
       className="p-3 mb-2 bg-white border rounded-lg shadow-sm cursor-move flex justify-between items-center"
     >
       <div>
-        <p className="font-medium">
-          {`Transfer to ${transaction.accountDestinationName}`}
-        </p>
-        <p className="text-sm text-gray-500">
-          {new Date(transaction.createdAt).toLocaleDateString()}
-        </p>
+        <p className="font-medium">{`Transfer to ${transaction.accountDestinationName}`}</p>
+        <p className="text-sm text-gray-500">{new Date(transaction.createdAt).toLocaleDateString()}</p>
       </div>
-      <p className="font-semibold text-red-600">
-        -Rp. {parseFloat(transaction.nominal).toLocaleString()}
-      </p>
+      <p className="font-semibold text-red-600">-Rp. {parseFloat(transaction.nominal).toLocaleString()}</p>
     </div>
   );
 };
 
-// A droppable category card, now with an uncategorize button
-const CategoryDropZone = ({ category, onDrop, onDragOver, onUncategorize }) => {
+const CategoryDropZone = ({ category, onDrop, onDragOver, onUncategorize, onDelete }) => {
   return (
     <div
       onDrop={(e) => onDrop(e, category.id)}
       onDragOver={onDragOver}
-      className="bg-gray-50 p-4 border-2 border-dashed rounded-lg min-h-[200px] transition-colors duration-200"
+      className="bg-gray-50 p-4 border-2 border-dashed rounded-lg min-h-[200px] transition-colors duration-200 flex flex-col"
     >
-      <h4 className="font-bold text-lg mb-2">{category.name}</h4>
-      <div className="space-y-1">
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="font-bold text-lg">{category.name}</h4>
+        {category.name !== 'Uncategorized' && (
+            <button onClick={() => onDelete(category.id)} className="text-gray-400 hover:text-red-600" title="Delete Category">
+                <TrashIcon className="h-5 w-5" />
+            </button>
+        )}
+      </div>
+      <div className="space-y-1 flex-grow">
         {category.transactions.map(tx => (
           <div key={tx.id} className="text-sm bg-white p-2 rounded-md shadow-sm flex justify-between items-center">
             <div className="flex-grow">
               <span>{tx.accountDestinationName}</span>
               <span className="block text-xs text-gray-500">-Rp. {parseFloat(tx.nominal).toLocaleString()}</span>
             </div>
-            {/* 👇 This is the new "X" button */}
-            <button 
-              onClick={() => onUncategorize(tx.id)}
-              className="ml-2 text-red-500 hover:text-red-700 font-bold"
-              title="Uncategorize"
-            >
+            <button onClick={() => onUncategorize(tx.id)} className="ml-2 text-red-500 hover:text-red-700 font-bold text-xl" title="Uncategorize">
               &times;
             </button>
           </div>
@@ -68,8 +63,7 @@ const CategoryDropZone = ({ category, onDrop, onDragOver, onUncategorize }) => {
 function CategorizePage() {
   const { transactions } = useTransactions();
   const { user } = useAuth();
-  // Get the new uncategorize function from the hook
-  const { categories, addCategory, assignTransactionToCategory, uncategorizeTransaction } = useCategories();
+  const { categories, addCategory, assignTransactionToCategory, uncategorizeTransaction, deleteCategory } = useCategories();
 
   const userExpenses = useMemo(() => 
     transactions.filter(tx => String(tx.accountSourceId) === String(user.id))
@@ -100,11 +94,16 @@ function CategorizePage() {
     e.target.reset();
   };
 
+  const handleDeleteCategory = (categoryId) => {
+      if (window.confirm("Are you sure you want to delete this category? All its transactions will be moved to 'Uncategorized'.")) {
+          deleteCategory(categoryId);
+      }
+  };
+
   return (
     <main>
       <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
         <h2 className="text-2xl font-bold px-4 mb-6">Categorize Your Spending</h2>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4">
           <div className="lg:col-span-1 bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-bold mb-4">Uncategorized Expenses</h3>
@@ -116,7 +115,6 @@ function CategorizePage() {
               )}
             </div>
           </div>
-
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-lg shadow p-6">
                 <form onSubmit={handleAddCategory} className="flex gap-2">
@@ -124,7 +122,6 @@ function CategorizePage() {
                     <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Add</button>
                 </form>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {categories.map(cat => (
                 <CategoryDropZone 
@@ -132,8 +129,8 @@ function CategorizePage() {
                   category={cat} 
                   onDrop={handleDrop} 
                   onDragOver={handleDragOver}
-                  // Pass the handler down to the component
                   onUncategorize={uncategorizeTransaction}
+                  onDelete={handleDeleteCategory}
                 />
               ))}
             </div>
