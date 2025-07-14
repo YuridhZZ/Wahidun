@@ -43,7 +43,7 @@ export default function Profile() {
                                 <div className="flex items-center">
                                     <CreditCardIcon className="h-5 w-5 text-gray-500 mr-2" />
                                     <div>
-                                        <p className="text-sm font-medium text-gray-500">Account Number</p>
+                                        <p className="flex text-sm font-medium text-gray-500">Account Number</p>
                                         <p className="text-lg font-semibold">{user?.accountNumber}</p>
                                     </div>
                                 </div>
@@ -51,7 +51,7 @@ export default function Profile() {
                                     <BanknotesIcon className="h-5 w-5 text-gray-500 mr-2" />
                                     <div>
                                         <p className="text-sm font-medium text-gray-500">Account Type</p>
-                                        <p className="text-lg font-semibold">{user?.accountType}</p>
+                                        <p className="flex text-lg font-semibold">{user?.accountType}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center">
@@ -66,7 +66,7 @@ export default function Profile() {
                                 <div className="flex items-center">
                                     <EnvelopeIcon className="h-5 w-5 text-gray-500 mr-2" />
                                     <div>
-                                        <p className="text-sm font-medium text-gray-500">Email</p>
+                                        <p className="flex text-sm font-medium text-gray-500">Email</p>
                                         <p className="text-lg font-semibold">{user?.email}</p>
                                     </div>
                                 </div>
