@@ -59,6 +59,16 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const logout = () => {
+    setUser(null);
+    setIsAdmin(false);
+    localStorage.removeItem('user');
+    localStorage.removeItem('Admin');
+    // We don't clear the log here so the user can see "User signed out" before it disappears.
+    // The log will be cleared upon the next user's login.
+    navigate('/login');
+  };
+  
   const register = async (formData) => {
     try {
       if (formData.password !== formData.confirmPassword) {
@@ -74,7 +84,6 @@ export function AuthProvider({ children }) {
         accountType: formData.accountType,
         accountNumber: generateAccountNumber(),
         balance: 1000000,
-        role: formData.role,
         createdAt: new Date().toISOString()
       };
       const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user', {
@@ -88,7 +97,7 @@ export function AuthProvider({ children }) {
         const newUser = await response.json();
         setUser(newUser);
         localStorage.setItem('user', JSON.stringify(newUser));
-        
+
         // Clear any previous log and start a new one
         clearActivityLog();
         logActivity('New user registered and signed in');
@@ -105,18 +114,21 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsAdmin(false);
-    localStorage.removeItem('user');
-    localStorage.removeItem('Admin');
-    // We don't clear the log here so the user can see "User signed out" before it disappears.
-    // The log will be cleared upon the next user's login.
-    navigate('/login');
-  };
-
   const refreshUserData = useCallback(async () => {
-    // ... your existing refreshUserData logic ...
+    if (user?.id) {
+      try {
+        const response = await fetch(`https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user/${user.id}`);
+        if (response.ok) {
+          const updatedUser = await response.json();
+          setUser(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        } else {
+           throw new Error('Failed to refresh user data');
+        }
+      } catch (error) {
+        console.error("Failed to refresh user data:", error);
+      }
+    }
   }, [user]);
 
   if (loading) {

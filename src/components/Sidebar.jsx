@@ -51,21 +51,21 @@ const MenuItem = ({ item, isOpen, setOpenMenuItem }) => {
 };
 
 const menuData = [
+  // Explicitly define which links are for admins and which are for users
   { id: 'admin', path: '/admin-dashboard', name: 'Admin Dashboard', icon: ShieldCheckIcon, adminOnly: true },
   { id: 'dashboard', path: '/dashboard', name: 'Dashboard', icon: HomeIcon, adminOnly: false },
-  { id: 'analytics', path: '/analytics', name: 'Analytics', icon: ChartPieIcon },
+  { id: 'analytics', path: '/analytics', name: 'Analytics', icon: ChartPieIcon, adminOnly: false },
   {
-    id: 'transac', name: 'Transactions', icon: ClockIcon, 
-    subItems: [{ id: 'transfer', path: '/transfer-wizard', name: 'New Transfer', icon: PaperAirplaneIcon },
-    { id: 'transacList', path: '/transactions/lists', name: 'Transaction History' },
+    id: 'transac', name: 'Transactions', icon: ClockIcon, adminOnly: false,
+    subItems: [
+        { id: 'transfer', path: '/transfer-wizard', name: 'New Transfer' },
+        { id: 'transacList', path: '/transactions/lists', name: 'Transaction History' },
     ],
   },
-  { id: 'categorize', path: '/categorize', name: 'Categorize', icon: TagIcon },
-  { id: 'activity', path: '/activity-log', name: 'Activity Log', icon: ListBulletIcon },
-  { id: 'profile', path: '/profile', name: 'Profile', icon: UserIcon },
-
-  { id: 'edit-profile', path: '/edit-profile', name: 'Edit Profile', icon: Cog6ToothIcon },
-  { id: 'admin', path: '/admin', name: 'Admin Dashboard', icon: ShieldCheckIcon, adminOnly: true },
+  { id: 'categorize', path: '/categorize', name: 'Categorize', icon: TagIcon, adminOnly: false },
+  { id: 'activity', path: '/activity-log', name: 'Activity Log', icon: ListBulletIcon, adminOnly: false },
+  { id: 'profile', path: '/profile', name: 'Profile', icon: UserIcon, adminOnly: false },
+  { id: 'edit-profile', path: '/edit-profile', name: 'Edit Profile', icon: Cog6ToothIcon, adminOnly: false },
 ];
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
@@ -81,6 +81,17 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
     }
   }, [location.pathname]);
 
+  // Filter the menu items based on the user's role
+  const visibleMenuData = menuData.filter(link => {
+      if (isAdmin) {
+          // If user is admin, only show links where adminOnly is true
+          return link.adminOnly === true;
+      } else {
+          // If user is not admin, only show links where adminOnly is false
+          return link.adminOnly === false;
+      }
+  });
+
   return (
     <aside
       className={`fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform ${isOpen ? '' : '-translate-x-full'
@@ -89,19 +100,14 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
     >
       <div className="overflow-y-auto py-5 px-3 h-full bg-white">
         <ul className="space-y-2">
-          {menuData.map((link) => {
-            if (link.adminOnly && !isAdmin) {
-              return null;
-            }
-            return (
-              <MenuItem
-                key={link.id}
-                item={link}
-                isOpen={openSubMenuName === link.id}
-                setOpenMenuItem={() => setOpenSubMenuName(link.id === openSubMenuName ? null : link.id)}
-              />
-            );
-          })}
+          {visibleMenuData.map((link) => (
+            <MenuItem
+              key={link.id}
+              item={link}
+              isOpen={openSubMenuName === link.id}
+              setOpenMenuItem={() => setOpenSubMenuName(link.id === openSubMenuName ? null : link.id)}
+            />
+          ))}
         </ul>
       </div>
     </aside>
