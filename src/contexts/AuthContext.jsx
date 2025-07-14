@@ -36,7 +36,6 @@ export function AuthProvider({ children }) {
         u.email === credentials.email && u.password === credentials.password
       );
 
-      // This is the safe way to check for the user first.
       if (foundUser) {
         setUser(foundUser);
         localStorage.setItem('user', JSON.stringify(foundUser));
@@ -49,7 +48,6 @@ export function AuthProvider({ children }) {
           navigate('/dashboard');
         }
         
-        // Return the user object so the LoginPage can log the event.
         return { success: true, user: foundUser };
       } else {
         return { success: false, message: 'Invalid credentials' };
