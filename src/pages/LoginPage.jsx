@@ -11,30 +11,23 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { logActivity } = useActivityLog();
-  const effectRan = useRef(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
     const result = await login({ email, password });
 
-    if (result.success) {
-      console.log(result.isAdmin)
-      // This line handles the logging right after a successful login
-      if (result.user.role == 'Admin') {
-        logActivity('Admin signed in');
-        localStorage.setItem('isAdmin', 'true');
-      } else {
-        logActivity('User signed in');
-        localStorage.setItem('isAdmin', 'false');
-      } 
+    if (result && result.success) {
+      logActivity('User signed in');
     } else {
       setError(result.message);
     }
+
     setIsLoading(false);
   };
+
 
   return (
     <div className="bg-white min-h-screen">
@@ -82,7 +75,7 @@ function LoginPage() {
                     placeholder="••••••••"
                     className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-10"
                   />
-                   {/* Password visibility toggle button JSX can be placed here */}
+                  {/* Password visibility toggle button JSX can be placed here */}
                 </div>
               </div>
               <button
