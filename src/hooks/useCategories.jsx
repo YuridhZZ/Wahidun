@@ -59,5 +59,34 @@ export const useCategories = () => {
     });
   }, [setCategories]);
 
-  return { categories, addCategory, assignTransactionToCategory, uncategorizeTransaction };
+  const deleteCategory = useCallback((categoryIdToDelete) => {
+    setCategories(prev => {
+        const categoryToDelete = prev.find(c => c.id === categoryIdToDelete);
+        const uncategorizedCategory = prev.find(c => c.name === 'Uncategorized');
+
+        if (!categoryToDelete || categoryToDelete.name === 'Uncategorized') {
+            alert("This category cannot be deleted.");
+            return prev;
+        }
+        if (!uncategorizedCategory) {
+            alert("An 'Uncategorized' category must exist to delete others.");
+            return prev;
+        }
+
+        const transactionsToMove = categoryToDelete.transactions;
+
+        const newCategories = prev
+            .map(c => {
+                if (c.id === uncategorizedCategory.id) {
+                    return { ...c, transactions: [...c.transactions, ...transactionsToMove] };
+                }
+                return c;
+            })
+            .filter(c => c.id !== categoryIdToDelete);
+
+        return newCategories;
+    });
+  }, [setCategories]);
+
+  return { categories, addCategory, assignTransactionToCategory, uncategorizeTransaction, deleteCategory };
 };
