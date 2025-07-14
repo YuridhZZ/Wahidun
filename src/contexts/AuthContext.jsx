@@ -1,22 +1,26 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { generateAccountNumber } from '../utils/generateAccNumber';
-import { useActivityLog } from '../hooks/useActivityLog';
 
+// NOTE: useActivityLog is REMOVED from this file to fix the error.
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const isAuthenticated = user !== null;
-  const { logActivity, clearActivityLog } = useActivityLog(); // Get the clear function
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        if (parsedUser.role === 'Admin') {
+          setIsAdmin(true);
+        }
       } catch (error) {
         localStorage.removeItem('user');
       }
@@ -52,10 +56,22 @@ export function AuthProvider({ children }) {
         (u) => u.email === credentials.email && u.password === credentials.password
       );
 
+
       if (foundUser) {
         setUser(foundUser);
         localStorage.setItem('user', JSON.stringify(foundUser));
 
+        if (foundUser.role === 'Admin') {
+          setIsAdmin(true);
+          navigate('/admin-dashboard');
+        } else {
+          setIsAdmin(false);
+          navigate('/dashboard');
+        }
+        
+        // Return the user object so the LoginPage can log the event.
+        return { success: true, user: foundUser };
+=======
         clearActivityLog();
         logActivity('User signed in');
 
@@ -71,6 +87,7 @@ export function AuthProvider({ children }) {
       setLoading(false);
     }
   };
+
 
 
 
@@ -119,34 +136,32 @@ export function AuthProvider({ children }) {
     }
   };
 
+
   const logout = () => {
-    logActivity('User signed out');
     setUser(null);
+    setIsAdmin(false);
     localStorage.removeItem('user');
-    // We don't clear the log here so the user can see "User signed out" before it disappears.
-    // The log will be cleared upon the next user's login.
     navigate('/login');
   };
+  
+  const register = async (formData) => {
+    // ... your existing register logic ...
+    // Ensure it returns { success: true, user: newUser } on success
+  };
+
+  const refreshUserData = useCallback(async () => {
+    // ... your existing refreshUserData logic ...
+  }, [user]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register, refreshUserData }}>
+    <AuthContext.Provider value={{ user, isAdmin, isAuthenticated, login, logout, register, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
-}
-
-export function GuestRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
 }
 
 export function useAuth() {
