@@ -18,6 +18,7 @@ import TransferWizardPage from './pages/TransferWizardPage';
 
 import CategorizePage from './pages/CategorizePage';
 import EditProfilePage from './pages/EditProfilePage';
+import AddAccountPage from './pages/AddAccount';
 
 
 // Define ProtectedRoute, GuestRoute, and AdminRoute here
@@ -54,7 +55,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
 
             <Route path="/edit-profile" element={<EditProfilePage />} />
-
+            <Route path="/add-account" element={<AddAccountPage />} />
             <Route path="/activity-log" element={<ActivityLogPage />} />
             <Route path="/admin-dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
             <Route index element={<DashboardPage />} />
