@@ -8,6 +8,7 @@ function RegisterPage() {
         password: '',
         confirmPassword: '',
         accountType: 'Saving', // Default to Saving
+        role:'',
         termsAccepted: false
     });
     const [error, setError] = useState('');
@@ -158,6 +159,21 @@ function RegisterPage() {
                                 >
                                     <option value="Saving">Saving Account</option>
                                     <option value="Deposit">Deposit Account</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label htmlFor="role" className="flex block mb-2 text-sm font-medium text-gray-900">Role</label>
+                                <select
+                                    id="role"
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleChange}
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                    required
+                                >
+                                    <option value="User">User</option>
+                                    <option value="Admin">Admin</option>
                                 </select>
                             </div>
 

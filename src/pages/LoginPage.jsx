@@ -20,9 +20,16 @@ function LoginPage() {
     
     const result = await login({ email, password });
 
-    if (effectRan.result.success) {
+    if (result.success) {
+      console.log(result.isAdmin)
       // This line handles the logging right after a successful login
-      logActivity('User signed in'); 
+      if (result.user.role == 'Admin') {
+        logActivity('Admin signed in');
+        localStorage.setItem('isAdmin', 'true');
+      } else {
+        logActivity('User signed in');
+        localStorage.setItem('isAdmin', 'false');
+      } 
     } else {
       setError(result.message);
     }

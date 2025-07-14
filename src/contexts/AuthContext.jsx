@@ -6,6 +6,7 @@ import { useActivityLog } from '../hooks/useActivityLog';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+  const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -46,19 +47,35 @@ export function AuthProvider({ children }) {
       const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user');
       const users = await response.json();
       const foundUser = users.find(u =>
-        u.email === credentials.email && u.password === credentials.password
+        u.email === credentials.email && u.password === credentials.password 
       );
       if (foundUser) {
         setUser(foundUser);
-        localStorage.setItem('user', JSON.stringify(foundUser));
-
-        // Clear any previous user's activity log
+        const data = JSON.stringify(foundUser)
+        localStorage.setItem('user', data);
         clearActivityLog();
-        logActivity('User signed in');
 
-        navigate('/dashboard');
-        return { success: true };
-      } else {
+        if (foundUser.role === "Admin") {
+          console.log("check1")
+          setIsAdmin(true)
+          console.log(isAdmin)
+          logActivity('Admin signed in');
+          navigate('/adminDashboard');
+          localStorage.setItem('isAdmin', 'true')
+          
+        }
+        else {
+          console.log("check2")
+          setIsAdmin(false)
+          
+          logActivity('User signed in');
+          navigate('/dashboard');
+          localStorage.setItem('isAdmin', 'false')
+          console.log(isAdmin)
+        }         
+        return { success: true, user: foundUser };
+      }
+      else {
         return { success: false, message: 'Invalid credentials' };
       }
     } catch (error) {
@@ -83,6 +100,7 @@ export function AuthProvider({ children }) {
         accountType: formData.accountType,
         accountNumber: generateAccountNumber(),
         balance: 1000000,
+        role: formData.role,
         createdAt: new Date().toISOString()
       };
       const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user', {
@@ -117,6 +135,7 @@ export function AuthProvider({ children }) {
     logActivity('User signed out');
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('Admin');
     // We don't clear the log here so the user can see "User signed out" before it disappears.
     // The log will be cleared upon the next user's login.
     navigate('/login');
@@ -127,16 +146,37 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register, refreshUserData }}>
+    <AuthContext.Provider value={{ user, isAdmin, isAuthenticated, login, logout, register, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+export function AdminRoute({ children }) {
+  console.log("Admin route is rendered")
+  const { isAuthenticated, isAdmin } = useAuth();
+  console.log('AdminRoute render: isAuthenticated =', isAuthenticated, ', isAdmin =', isAdmin);
+  if (!isAuthenticated) {
+    // User is not authenticated, redirect to login
+    return <Navigate to="/login" replace />;
+  }
+  if (!isAdmin) {
+    // User is authenticated but not an admin, redirect to an unauthorized page
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  // User is authenticated AND is an admin, render the children
+  return children;
+}
+
 export function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
+  console.log("User route is rendered")
+  const { isAuthenticated, isAdmin} = useAuth();
+  console.log('USerRoute render: isAuthenticated =', isAuthenticated, ', isAdmin =', isAdmin);
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
+
+
 
 export function GuestRoute({ children }) {
   const { isAuthenticated } = useAuth();

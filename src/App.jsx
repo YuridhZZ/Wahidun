@@ -1,6 +1,6 @@
 import './App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router';
-import { AuthProvider, ProtectedRoute, GuestRoute } from './contexts/AuthContext';
+import { AuthProvider, ProtectedRoute, GuestRoute, AdminRoute } from './contexts/AuthContext';
 import { TransactionProvider } from './contexts/TransactionContext';
 import { useAuth } from './contexts/AuthContext'
 import { Outlet } from 'react-router-dom';
@@ -15,7 +15,11 @@ import Layout from './components/Layout';
 import ActivityLogPage from './pages/ActivityLog';
 import CategorizePage from './pages/CategorizePage';
 import TransferWizardPage from './pages/TransferWizardPage';
+<<<<<<< Updated upstream
 import AnalyticsPage from './pages/AnalyticsPage'; 
+=======
+import AdminDashboardPage from './pages/AdminDashboardPage';
+>>>>>>> Stashed changes
 
 function App() {
 
@@ -25,6 +29,9 @@ function App() {
         <Routes>
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
+          <Route path="/" element={<AdminRoute><LayoutWrapper/></AdminRoute>}>
+            <Route path="/adminDashboard" element={<AdminDashboardPage/>}/>
+          </Route>
           <Route path="/" element={<ProtectedRoute><LayoutWrapper /></ProtectedRoute>}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
