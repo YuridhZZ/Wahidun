@@ -51,10 +51,11 @@ const MenuItem = ({ item, isOpen, setOpenMenuItem }) => {
 };
 
 const menuData = [
-  { id: 'dashboard', path: '/dashboard', name: 'Dashboard', icon: HomeIcon },
+  { id: 'admin', path: '/admin-dashboard', name: 'Admin Dashboard', icon: ShieldCheckIcon, adminOnly: true },
+  { id: 'dashboard', path: '/dashboard', name: 'Dashboard', icon: HomeIcon, adminOnly: false },
   { id: 'analytics', path: '/analytics', name: 'Analytics', icon: ChartPieIcon },
   {
-    id: 'transac', name: 'Transactions', icon: ClockIcon,
+    id: 'transac', name: 'Transactions', icon: ClockIcon, 
     subItems: [{ id: 'transfer', path: '/transfer-wizard', name: 'New Transfer', icon: PaperAirplaneIcon },
       { id: 'transacList', path: '/transactions/lists', name: 'Transaction History' },
     ],
@@ -62,7 +63,6 @@ const menuData = [
   { id: 'categorize', path: '/categorize', name: 'Categorize', icon: TagIcon },
   { id: 'activity', path: '/activity-log', name: 'Activity Log', icon: ListBulletIcon },
   { id: 'profile', path: '/profile', name: 'Profile', icon: UserIcon },
-  { id: 'admin', path: '/admin', name: 'Admin Dashboard', icon: ShieldCheckIcon, adminOnly: true },
 ];
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
