@@ -1,26 +1,19 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth } from './AuthContext'; // Import useAuth to get the current user
+import { useAuth } from './AuthContext';
+import { getLocalTransactions, bulkAddTransactions, clearTransactions } from '../utils/indexedDB';
 
 const TransactionContext = createContext();
 
 export function useTransactions() {
-  const context = useContext(TransactionContext);
-  if (!context) {
-    throw new Error('useTransactions must be used within a TransactionProvider');
-  }
-  return context;
+  return useContext(TransactionContext);
 }
 
-// The userId prop is no longer needed
 export function TransactionProvider({ children }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const { user } = useAuth(); // Get the user from the AuthContext
+  const { user } = useAuth();
 
-  // Renamed to refreshTransactions for clarity
   const refreshTransactions = useCallback(async () => {
-    // If there's no logged-in user, there are no transactions to fetch.
     if (!user?.id) {
       setTransactions([]);
       setLoading(false);
@@ -28,44 +21,48 @@ export function TransactionProvider({ children }) {
     }
     
     setLoading(true);
-    setError(null);
+    
     try {
-      // Fetch all transactions from the API
-      const response = await fetch(`https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/transaction`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch transactions");
+      // 1. Optimistic UI: Load from local DB first
+      const localTxs = await getLocalTransactions();
+      const userLocalTxs = localTxs.filter(tx => 
+        String(tx.accountSourceId) === String(user.id) || 
+        String(tx.accountDestinationId) === String(user.id)
+      );
+      if (userLocalTxs.length > 0) {
+        setTransactions(userLocalTxs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       }
-      const allTransactions = await response.json();
 
-      // Correctly filter transactions related to the current user
+      // 2. Fetch from network
+      const response = await fetch(`https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/transaction`);
+      if (!response.ok) throw new Error("Network fetch failed, using local data.");
+      
+      const allTransactions = await response.json();
       const userTransactions = allTransactions.filter(tx =>
         String(tx.accountSourceId) === String(user.id) || 
         String(tx.accountDestinationId) === String(user.id)
-      ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by most recent
+      );
 
-      setTransactions(userTransactions);
+      // 3. Update local DB and state
+      await clearTransactions();
+      await bulkAddTransactions(userTransactions);
+      setTransactions(userTransactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
 
-    } catch (err) {
-      console.error("Error fetching transactions:", err);
-      setError('Failed to fetch transactions');
-      setTransactions([]); // Clear transactions on error
+    } catch (error) {
+      console.error(error.message);
     } finally {
       setLoading(false);
     }
-  }, [user]); // This function now depends on the user object
+  }, [user]);
 
-  // This useEffect will run whenever the user logs in or out
   useEffect(() => {
     refreshTransactions();
   }, [refreshTransactions]);
 
-
-  // The value provided to the rest of the app
   const value = {
     transactions,
     loading,
-    error,
-    refreshTransactions, // Provide the refresh function
+    refreshTransactions,
   };
 
   return (

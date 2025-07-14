@@ -5,13 +5,17 @@ import {
   UserIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
-  ListBulletIcon // Import the new icon
+  ListBulletIcon,
+  TagIcon,
+  PaperAirplaneIcon // New Icon
 } from '@heroicons/react/24/solid';
 import MenuItem from './MenuItems';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const menuData = [
   { id: 'dashboard', path: '/dashboard', name: 'Dashboard', icon: HomeIcon },
+  // New top-level link for the wizard
+  { id: 'transfer', path: '/transfer-wizard', name: 'New Transfer', icon: PaperAirplaneIcon },
   {
     id: 'transac', name: 'Transactions', icon: ClockIcon,
     subItems: [
@@ -19,13 +23,23 @@ const menuData = [
       { id: 'transacList', path: '/transactions/lists', name: 'Transaction History' },
     ],
   },
-  { id: 'activity', path: '/activity-log', name: 'Activity Log', icon: ListBulletIcon }, // Add new menu item
+  { id: 'categorize', path: '/categorize', name: 'Categorize', icon: TagIcon },
+  { id: 'activity', path: '/activity-log', name: 'Activity Log', icon: ListBulletIcon },
   { id: 'profile', path: '/profile', name: 'Profile', icon: UserIcon }
 ];
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
   const location = useLocation();
   const [openSubMenuName, setOpenSubMenuName] = useState(null);
+
+  // Logic to automatically open the 'Transactions' accordion if on a sub-route
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const parentMenu = menuData.find(item => item.subItems?.some(sub => sub.path === currentPath));
+    if (parentMenu) {
+      setOpenSubMenuName(parentMenu.id);
+    }
+  }, [location.pathname]);
 
   return (
     <aside
@@ -40,22 +54,13 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
               key={link.id}
               item={link}
               isOpen={openSubMenuName === link.id}
-              setOpenMenuItem={() => setOpenSubMenuName(link.id)}
+              setOpenMenuItem={() => setOpenSubMenuName(link.id === openSubMenuName ? null : link.id)}
               closeCurrentSubMenu={() => setOpenSubMenuName(null)}
             />
           ))}
         </ul>
       </div>
-      <button
-        onClick={toggleSidebar}
-        className="sm:hidden absolute top-4 right-0 inline-flex items-center p-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
-      >
-        {isOpen ? (
-          <ArrowLeftIcon className="w-6 h-6" />
-        ) : (
-          <ArrowRightIcon className="w-6 h-6" />
-        )}
-      </button>
     </aside>
   );
 }
+

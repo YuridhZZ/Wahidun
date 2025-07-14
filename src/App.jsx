@@ -13,6 +13,8 @@ import Transactions from './pages/Transactions'
 import Profile from './pages/Profile';
 import Layout from './components/Layout';
 import ActivityLogPage from './pages/ActivityLog';
+import CategorizePage from './pages/CategorizePage';
+import TransferWizardPage from './pages/TransferWizardPage';
 
 function App() {
 
@@ -24,8 +26,10 @@ function App() {
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
           <Route path="/" element={<ProtectedRoute><LayoutWrapper /></ProtectedRoute>}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/transfer-wizard" element={<TransferWizardPage />} /> 
             <Route path="/transactions/new" element={<TransactionForm />} />
             <Route path="/transactions/lists" element={<Transactions />} />
+            <Route path="/categorize" element={<CategorizePage />} />
             <Route path="profile" element={<Profile />} />
             <Route path="/activity-log" element={<ActivityLogPage />} />
             <Route index element={<DashboardPage />} />
