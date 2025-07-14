@@ -71,7 +71,6 @@ export function AuthProvider({ children }) {
         
         // Return the user object so the LoginPage can log the event.
         return { success: true, user: foundUser };
-=======
         clearActivityLog();
         logActivity('User signed in');
 
