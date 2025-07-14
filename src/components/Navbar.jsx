@@ -5,6 +5,7 @@ import { useActivityLog } from '../hooks/useActivityLog';
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { logActivity } = useActivityLog();
+  const shouldShowAccountLabel = user?.accountType !== 'Deposit';
 
   const handleLogout = () => {
     // Log the action first, then perform the logout
@@ -17,14 +18,16 @@ export default function Navbar() {
       <div className="flex flex-wrap justify-between items-center">
         <div className="flex justify-start items-center">
           <Link to="/dashboard" className="flex items-center justify-between mr-4">
-            <span className="self-center text-xl font-semibold whitespace-nowrap">FlowBank</span>
+            <span className="self-center text-xl font-semibold whitespace-nowrap">Wahidun Bank</span>
           </Link>
         </div>
         <div className="flex items-center lg:order-2">
           <div className="flex items-center space-x-3">
             <div>
               <span className="text-sm font-medium text-gray-900">{user?.name}</span>
-              <span className="block text-sm text-gray-500">{user?.accountType} Account</span>
+              <span className="block text-sm text-gray-500">
+                {user?.accountType === 'Saving' ? 'Saving Account' : ''}
+              </span>
             </div>
             <button
               onClick={handleLogout}
