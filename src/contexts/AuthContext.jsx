@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
           setUser(updatedUser);
           localStorage.setItem('user', JSON.stringify(updatedUser));
         } else {
-           throw new Error('Failed to refresh user data');
+          throw new Error('Failed to refresh user data');
         }
       } catch (error) {
         console.error("Failed to refresh user data:", error);
@@ -44,29 +44,35 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     try {
       const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user');
+      if (!response.ok) throw new Error('Failed to fetch users');
+
       const users = await response.json();
-      const foundUser = users.find(u =>
-        u.email === credentials.email && u.password === credentials.password
+
+      const foundUser = users.find(
+        (u) => u.email === credentials.email && u.password === credentials.password
       );
+
       if (foundUser) {
         setUser(foundUser);
         localStorage.setItem('user', JSON.stringify(foundUser));
 
-        // Clear any previous user's activity log
         clearActivityLog();
         logActivity('User signed in');
 
         navigate('/dashboard');
         return { success: true };
       } else {
-        return { success: false, message: 'Invalid credentials' };
+        return { success: false, message: 'Email or password is invalid' };
       }
     } catch (error) {
+      console.error('Login error:', error);
       return { success: false, message: 'Login failed. Please try again.' };
     } finally {
       setLoading(false);
     }
   };
+
+
 
   const register = async (formData) => {
     try {
@@ -96,7 +102,7 @@ export function AuthProvider({ children }) {
         const newUser = await response.json();
         setUser(newUser);
         localStorage.setItem('user', JSON.stringify(newUser));
-        
+
         // Clear any previous log and start a new one
         clearActivityLog();
         logActivity('New user registered and signed in');
