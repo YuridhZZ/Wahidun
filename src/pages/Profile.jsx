@@ -14,15 +14,19 @@ export default function Profile() {
     const { user } = useAuth();
     const { transactions } = useTransactions();
 
-    // Calculate transaction type distribution
-    const transactionTypes = transactions.reduce((acc, tx) => {
-        acc[tx.category] = (acc[tx.category] || 0) + 1;
-        return acc;
-    }, { in: 0, out: 0 });
+    // 👇 CORRECTED LOGIC: Count transactions based on the user's role
+    const incomeTransactionsCount = transactions.filter(
+        (tx) => String(tx.accountDestinationId) === String(user.id)
+    ).length;
 
+    const expenseTransactionsCount = transactions.filter(
+        (tx) => String(tx.accountSourceId) === String(user.id)
+    ).length;
+
+    // The pie chart data now uses the correct counts
     const pieData = [
-        { name: 'Income', value: transactionTypes.in, color: '#10B981' },
-        { name: 'Expenses', value: transactionTypes.out, color: '#EF4444' }
+        { name: 'Income', value: incomeTransactionsCount, color: '#10B981' },
+        { name: 'Expenses', value: expenseTransactionsCount, color: '#EF4444' }
     ];
 
     return (
@@ -43,7 +47,6 @@ export default function Profile() {
                                         <p className="text-lg font-semibold">{user?.accountNumber}</p>
                                     </div>
                                 </div>
-
                                 <div className="flex items-center">
                                     <BanknotesIcon className="h-5 w-5 text-gray-500 mr-2" />
                                     <div>
@@ -51,7 +54,6 @@ export default function Profile() {
                                         <p className="text-lg font-semibold">{user?.accountType}</p>
                                     </div>
                                 </div>
-
                                 <div className="flex items-center">
                                     <CalendarIcon className="h-5 w-5 text-gray-500 mr-2" />
                                     <div>
@@ -61,7 +63,6 @@ export default function Profile() {
                                         </p>
                                     </div>
                                 </div>
-
                                 <div className="flex items-center">
                                     <EnvelopeIcon className="h-5 w-5 text-gray-500 mr-2" />
                                     <div>
@@ -79,7 +80,7 @@ export default function Profile() {
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
-                                            data={pieData}
+                                            data={pieData.filter(d => d.value > 0)}
                                             cx="50%"
                                             cy="50%"
                                             labelLine={false}
@@ -104,7 +105,7 @@ export default function Profile() {
                                         <p className="text-sm font-medium text-gray-500">Total Income Transactions</p>
                                     </div>
                                     <p className="text-2xl font-bold text-green-600 mt-2">
-                                        {transactionTypes.in}
+                                        {incomeTransactionsCount}
                                     </p>
                                 </div>
 
@@ -114,7 +115,7 @@ export default function Profile() {
                                         <p className="text-sm font-medium text-gray-500">Total Expense Transactions</p>
                                     </div>
                                     <p className="text-2xl font-bold text-red-600 mt-2">
-                                        {transactionTypes.out}
+                                        {expenseTransactionsCount}
                                     </p>
                                 </div>
                             </div>
