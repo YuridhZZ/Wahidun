@@ -67,12 +67,65 @@ export function AuthProvider({ children }) {
   };
   
   const register = async (formData) => {
-    // ... your existing register logic ...
-    // Ensure it returns { success: true, user: newUser } on success
+    try {
+      if (formData.password !== formData.confirmPassword) {
+        return { success: false, message: 'Passwords do not match' };
+      }
+      if (!formData.termsAccepted) {
+        return { success: false, message: 'You must accept the terms and conditions' };
+      }
+      const userData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        accountType: formData.accountType,
+        accountNumber: generateAccountNumber(),
+        balance: 1000000,
+        createdAt: new Date().toISOString()
+      };
+      const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      if (response.ok) {
+        const newUser = await response.json();
+        setUser(newUser);
+        localStorage.setItem('user', JSON.stringify(newUser));
+
+        // Clear any previous log and start a new one
+        clearActivityLog();
+        logActivity('New user registered and signed in');
+
+        navigate('/dashboard');
+        return { success: true };
+      } else {
+        return { success: false, message: 'Registration failed. Please try again.' };
+      }
+    } catch (error) {
+      return { success: false, message: error.message || 'An unexpected error occurred.' };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const refreshUserData = useCallback(async () => {
-    // ... your existing refreshUserData logic ...
+    if (user?.id) {
+      try {
+        const response = await fetch(`https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user/${user.id}`);
+        if (response.ok) {
+          const updatedUser = await response.json();
+          setUser(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        } else {
+           throw new Error('Failed to refresh user data');
+        }
+      } catch (error) {
+        console.error("Failed to refresh user data:", error);
+      }
+    }
   }, [user]);
 
   if (loading) {
