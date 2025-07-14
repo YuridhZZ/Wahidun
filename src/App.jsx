@@ -15,6 +15,7 @@ import Layout from './components/Layout';
 import ActivityLogPage from './pages/ActivityLog';
 import CategorizePage from './pages/CategorizePage';
 import TransferWizardPage from './pages/TransferWizardPage';
+import AnalyticsPage from './pages/AnalyticsPage'; 
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
           <Route path="/" element={<ProtectedRoute><LayoutWrapper /></ProtectedRoute>}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/transfer-wizard" element={<TransferWizardPage />} /> 
             <Route path="/transactions/new" element={<TransactionForm />} />
             <Route path="/transactions/lists" element={<Transactions />} />
