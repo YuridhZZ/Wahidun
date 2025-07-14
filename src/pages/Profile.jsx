@@ -70,6 +70,13 @@ export default function Profile() {
                                         <p className="text-lg font-semibold">{user?.email}</p>
                                     </div>
                                 </div>
+                                <div className="flex items-center">
+                                    <EnvelopeIcon className="h-5 w-5 text-gray-500 mr-2" />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Email</p>
+                                        <p className="text-lg font-semibold">{user?.role}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

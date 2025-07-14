@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
       const response = await fetch('https://6870d44c7ca4d06b34b83a49.mockapi.io/api/core/user');
       const users = await response.json();
       const foundUser = users.find(u =>
-        u.email === credentials.email && u.password === credentials.password
+        u.email === credentials.email && u.password === credentials.password 
       );
 
       if (foundUser) {
@@ -63,6 +63,9 @@ export function AuthProvider({ children }) {
     setUser(null);
     setIsAdmin(false);
     localStorage.removeItem('user');
+    localStorage.removeItem('Admin');
+    // We don't clear the log here so the user can see "User signed out" before it disappears.
+    // The log will be cleared upon the next user's login.
     navigate('/login');
   };
   
@@ -137,6 +140,37 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
+}
+
+export function AdminRoute({ children }) {
+  console.log("Admin route is rendered")
+  const { isAuthenticated, isAdmin } = useAuth();
+  console.log('AdminRoute render: isAuthenticated =', isAuthenticated, ', isAdmin =', isAdmin);
+  if (!isAuthenticated) {
+    // User is not authenticated, redirect to login
+    return <Navigate to="/login" replace />;
+  }
+  if (!isAdmin) {
+    // User is authenticated but not an admin, redirect to an unauthorized page
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  // User is authenticated AND is an admin, render the children
+  return children;
+}
+
+export function ProtectedRoute({ children }) {
+  console.log("User route is rendered")
+  const { isAuthenticated, isAdmin} = useAuth();
+  console.log('USerRoute render: isAuthenticated =', isAuthenticated, ', isAdmin =', isAdmin);
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+
+
+export function GuestRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
 }
 
 export function useAuth() {
