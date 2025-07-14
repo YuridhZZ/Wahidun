@@ -57,11 +57,15 @@ export function AuthProvider({ children }) {
         setUser(foundUser);
         localStorage.setItem('user', JSON.stringify(foundUser));
 
-        clearActivityLog();
-        logActivity('User signed in');
-
-        navigate('/dashboard');
-        return { success: true };
+        if (foundUser.role === 'Admin') {
+          setIsAdmin(true);
+          navigate('/admin-dashboard');
+        } else {
+          setIsAdmin(false);
+          navigate('/dashboard');
+        }
+        
+        return { success: true, user: foundUser };
       } else {
         return { success: false, message: 'Email or password is invalid' };
       }
