@@ -17,7 +17,6 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import TransferWizardPage from './pages/TransferWizardPage';
 
 import CategorizePage from './pages/CategorizePage';
-import AnalyticsPage from './pages/AnalyticsPage'; 
 import EditProfilePage from './pages/EditProfilePage';
 
 
