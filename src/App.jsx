@@ -15,7 +15,10 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import Layout from './components/Layout';
 import AnalyticsPage from './pages/AnalyticsPage';
 import TransferWizardPage from './pages/TransferWizardPage';
+
 import CategorizePage from './pages/CategorizePage';
+import EditProfilePage from './pages/EditProfilePage';
+
 
 // Define ProtectedRoute, GuestRoute, and AdminRoute here
 function ProtectedRoute({ children }) {
@@ -49,6 +52,9 @@ function App() {
             <Route path="/transactions/lists" element={<Transactions />} />
             <Route path="/categorize" element={<CategorizePage />} />
             <Route path="/profile" element={<Profile />} />
+
+            <Route path="/edit-profile" element={<EditProfilePage />} />
+
             <Route path="/activity-log" element={<ActivityLogPage />} />
             <Route path="/admin-dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
             <Route index element={<DashboardPage />} />
