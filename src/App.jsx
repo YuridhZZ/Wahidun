@@ -16,6 +16,7 @@ import ActivityLogPage from './pages/ActivityLog';
 import CategorizePage from './pages/CategorizePage';
 import TransferWizardPage from './pages/TransferWizardPage';
 import AnalyticsPage from './pages/AnalyticsPage'; 
+import EditProfilePage from './pages/EditProfilePage';
 
 function App() {
 
@@ -32,7 +33,8 @@ function App() {
             <Route path="/transactions/new" element={<TransactionForm />} />
             <Route path="/transactions/lists" element={<Transactions />} />
             <Route path="/categorize" element={<CategorizePage />} />
-            <Route path="profile" element={<Profile />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/edit-profile" element={<EditProfilePage />} />
             <Route path="/activity-log" element={<ActivityLogPage />} />
             <Route index element={<DashboardPage />} />
           </Route>
